@@ -1,6 +1,4 @@
-# ROS2 Humble Docker Template
-
-# Computer Vision Development Environment
+# Computer Vision Docker Note
 
 This repository is my personal note which contains a Docker-based development environment for computer vision projects, configured for Ubuntu 22.04 with Python, OpenCV, and AI libraries. 
 
