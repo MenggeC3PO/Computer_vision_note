@@ -1,0 +1,1 @@
+DOCKER_BUILDKIT=1 docker build --tag=cv_workspace --build-arg UID=$(id -u) --build-arg GID=$(id -g) .

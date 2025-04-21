@@ -1,0 +1,29 @@
+# General
+*.py[cod]
+__pycache__/
+*.swp
+.DS_Store
+Thumbs.db
+*.log
+*.cfg
+
+# Python virtual environments
+venv/
+.env
+
+# Image material
+CV_ws/materials/**
+
+# IDE specific files
+.idea/
+.vscode/
+*.sublime-workspace
+
+
+# Media files you don't want to track
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.avi
+*.mp4
