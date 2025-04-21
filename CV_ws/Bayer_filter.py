@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import sys
 
 # ------------------------------------------------------------------
-# 0. Load the picture  (pass a path on the command line, or edit here)
+# 0. Load the picture  
 # ------------------------------------------------------------------
 img_path = sys.argv[1] if len(sys.argv) > 1 else "/home/cv_user/CV_ws/materials/Bayer_filter_example.png"
 img_bgr  = cv2.imread(img_path)
