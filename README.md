@@ -1,44 +1,51 @@
 # ROS2 Humble Docker Template
 
-This repo is the docker environment that I used for practicing computer vision on Ubuntu 22.04 with Python, OpenCV and AI. 
+# Computer Vision Development Environment
 
-## Repository Overview
+This repository is my personal note which contains a Docker-based development environment for computer vision projects, configured for Ubuntu 22.04 with Python, OpenCV, and AI libraries. 
+
+## Repository Structure
 
 - **docker/**:
-  - **Dockerfile**: Defines the base image with OpenCV and essential libraries. 
-  - **build_image.sh**: Builds the Docker image as `cv_workspace`.
-  - **run_container.sh**: Launches the container with GUI. 
-  - **shell_container.sh**: Opens a new terminal shell into the running container
-  
-- **CV_ws/**: Computer vision workspace (auto-mounted into the container). All python code should save in here
+   - **Dockerfile**: Configures the environment with OpenCV and essential libraries
+   - **build_image.sh**: Creates the `cv_workspace` Docker image
+   - **run_container.sh**: Launches the container with GUI support
+   - **shell_container.sh**: Opens additional terminal shells into the running container
+   
+- **CV_ws/**: Workspace directory automatically mounted into the container for development
 
-## Quickstart
+## Getting Started
 
-1. **Build the Image**: Go to `docker` and run:
-   ```
-   ./build_image.sh
-   ```
-2. **Start the Container**: From `docker`, execute:
-   ```
-   ./run_container.sh
-   ```
-3. **Additional Shell (Optional)**: For a new shell inside the running container, use:
-   ```
-   ./shell_container.sh
-   ```
+1. **Build the Docker Image**:
+    ```bash
+    cd docker
+    ./build_image.sh
+    ```
 
-## Docker Permissions
+2. **Launch the Container**:
+    ```bash
+    ./run_container.sh
+    ```
 
-Ensure your user has appropriate permissions by adding it to the Docker group:
+3. **Access Additional Shells** (as needed):
+    ```bash
+    ./shell_container.sh
+    ```
 
-```
+## Docker Configuration
+
+To ensure proper permissions, add your user to the Docker group:
+
+```bash
 sudo usermod -aG docker $USER
 ```
 
-After executing the above command, you might need to log out and log back in for the group changes to take effect.
+Log out and log back in for the changes to take effect.
 
+## About me
 
-## Author
-Mengge Zhang
-KU Leuven, Belgium
-Group T – Faculty of Engineering Technology
+Mengge Zhang  
+KU Leuven, Belgium  
+Group T – Faculty of Engineering Technology  
+
+[LinkedIn](https://www.linkedin.com/in/mengge-zhang-b474a8334/)
