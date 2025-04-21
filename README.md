@@ -4,7 +4,7 @@ This repository is my personal note which contains a Docker-based development en
 
 ## Repository Structure
 
-- **docker/**:
+- **Docker/**:
    - **Dockerfile**: Configures the environment with OpenCV and essential libraries
    - **build_image.sh**: Creates the `cv_workspace` Docker image
    - **run_container.sh**: Launches the container with GUI support
