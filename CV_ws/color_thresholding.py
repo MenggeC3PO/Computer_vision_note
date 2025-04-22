@@ -1,76 +1,68 @@
 #!/usr/bin/env python3
 """
-Colour‑threshold demo on berries.png
-------------------------------------
-• CUBOID  (RGB axis‑aligned)  → catches every raspberry, leaks background
-• SPHERE  (Lab Euclidean)     → isolates the single blackberry
+Segment an orange cylinder with two colour‑space masks.
+
+    • METHOD A  HSV cuboid     (Hue‑S‑V band)
+    • METHOD B  Lab sphere     (perceptual ΔE radius)
+
+Outputs:
+    cylinder_mask.png            – final binary mask
+    cylinder_preview.png         – original with background blacked out
 """
 
 import cv2
 import numpy as np
 import sys, os
 
-# ----------------------------------------------------------------------
-# 0. read the image you provided
-# ----------------------------------------------------------------------
+
+# ------------------------------------------------------------
+# 0. user setting and image loading
+# ------------------------------------------------------------
+CSV_LOWER = (10, 80, 80)           # HSV lower bound  (H,S,V)
+CSV_UPPER = (30, 255, 255)         # HSV upper bound
+REF_BGR   = (70, 150, 240)         # reference colour picked on cylinder (B,G,R)
+LAB_RAD   = 28                     # Lab‑space radius
+
 img_path = sys.argv[1] if len(sys.argv) > 1 else \
            "/home/cv_user/CV_ws/materials/Color_Thresholding_example.png"
-img_bgr  = cv2.imread(img_path)
-if img_bgr is None:
+bgr      = cv2.imread(img_path)
+if bgr is None:
     raise FileNotFoundError(img_path)
 
-# ----------------------------------------------------------------------
-# 1. hard‑coded reference colours  (picked from the picture)
-# ----------------------------------------------------------------------
-# raspberry red  (RGB)  &  cuboid half‑sizes
-target_rgb_rasp = np.array([200,  60, 105], dtype=np.uint8)   # (R,G,B)
-dR, dG, dB      = 80, 80, 80                                  # generous box
+# 1. HSV cuboid mask 
+hsv   = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
+mask1 = cv2.inRange(hsv, CSV_LOWER, CSV_UPPER)
 
-# blackberry dark purple (RGB)  &  Lab‑sphere radius
-target_rgb_blk  = np.array([ 40,  30,  60], dtype=np.uint8)   # (R,G,B)
-R_lab           = 35                                          # Lab units
+# 2. Lab sphere mask
+ref_bgr = np.uint8([[REF_BGR]])                      
+ref_lab = cv2.cvtColor(ref_bgr, cv2.COLOR_BGR2Lab)[0,0].astype(np.int16)
+lab_img = cv2.cvtColor(bgr, cv2.COLOR_BGR2Lab).astype(np.int16)
+dist2   = np.sum((lab_img - ref_lab)**2, axis=2)
+mask2   = (dist2 <= LAB_RAD**2).astype(np.uint8) * 255
 
-# ----------------------------------------------------------------------
-# 2. build *CUBOID* mask   (RGB box around raspberries)
-# ----------------------------------------------------------------------
-lower_rgb = np.clip(target_rgb_rasp - (dR, dG, dB), 0, 255)
-upper_rgb = np.clip(target_rgb_rasp + (dR, dG, dB), 0, 255)
-mask_cub  = cv2.inRange(img_bgr, lower_rgb, upper_rgb)        # 0/255
+# 3. combine & tidy
+mask = cv2.bitwise_or(mask1, mask2)
 
-# ----------------------------------------------------------------------
-# 3. build *SPHERE* mask   (Lab distance from blackberry colour)
-# ----------------------------------------------------------------------
-lab       = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2Lab).astype(np.int16)
-target_lab = cv2.cvtColor(target_rgb_blk.reshape(1,1,3), cv2.COLOR_BGR2Lab)\
-                .astype(np.int16).reshape(3)
+kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (11,11))
+mask   = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, 2)
 
-dist2     = np.sum((lab - target_lab)**2, axis=2)
-mask_sph  = (dist2 <= R_lab**2).astype(np.uint8) * 255
+cnts,_ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+if cnts:
+    big = max(cnts, key=cv2.contourArea)
+    clean = np.zeros_like(mask)
+    cv2.drawContours(clean, [big], -1, 255, cv2.FILLED)
+    mask = clean
 
-# ----------------------------------------------------------------------
-# 4. helper to overlay a mask on the original image
-# ----------------------------------------------------------------------
-def overlay(src, mask, colour=(255,255,255), alpha=0.55):
-    out = src.copy()
-    sel = mask.astype(bool)
-    if sel.any():                                              # avoid empty slice
-        out[sel] = cv2.addWeighted(src[sel], 1-alpha,
-                                   np.full_like(src[sel], colour), alpha, 0)
-    return out
+# 4. save & preview 
+mask_window   = "binary mask"
+result_window = "segmented cylinder"
+cv2.imshow(mask_window, mask)  # white = cylinder, black = background
 
-ov_cub = overlay(img_bgr, mask_cub)             # raspberries (box)
-ov_sph = overlay(img_bgr, mask_sph)             # blackberry  (sphere)
+preview = bgr.copy()
+preview[mask == 0] = 0
+cv2.imshow(result_window, preview)  
 
-# ----------------------------------------------------------------------
-# 5. show results
-# ----------------------------------------------------------------------
-cv2.imshow("original",          img_bgr)
-cv2.imshow("CUBOID raspberries (leaks)", ov_cub)
-cv2.imshow("SPHERE blackberry  (tight)", ov_sph)
-
-print("--- pixel counts ----------------------------------------")
-print("cuboid mask :", np.count_nonzero(mask_cub))
-print("sphere mask :", np.count_nonzero(mask_sph))
-print("Close a window or hit any key in one of them to exit.")
+# cv2.imwrite("cylinder_mask.png", mask)
+# cv2.imwrite("cylinder_preview.png", preview)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
